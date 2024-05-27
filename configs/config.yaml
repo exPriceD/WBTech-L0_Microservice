@@ -1,0 +1,18 @@
+server:
+  host: "localhost"
+  port: ":8080"
+
+database:
+  host: ""
+  port: ""
+  user: ""
+  password: ""
+  name: ""
+
+nats-streaming:
+  url: ""
+  cluster_id: ""
+  client_id: ""
+
+logs:
+  log_level: "debug"
