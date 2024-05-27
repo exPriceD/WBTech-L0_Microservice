@@ -1,10 +1,9 @@
 package app
 
 import (
-	"encoding/json"
+	"WBTech_L0/internal/handler"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 	"time"
 )
@@ -30,22 +29,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) configureRouter() {
 	s.router.Use(s.logRequest)
-	s.router.HandleFunc("/", s.handleTest).Methods("GET")
-}
-
-func (s *Server) handleTest(w http.ResponseWriter, _ *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	resp := make(map[string]string)
-	resp["message"] = "Status Created"
-	jsonResp, err := json.Marshal(resp)
-	if err != nil {
-		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
-	}
-	_, err = w.Write(jsonResp)
-	if err != nil {
-		log.Fatalf("Error happened in response writing. Err: %s", err)
-	}
+	s.router.HandleFunc("/", handler.HandleTest).Methods("GET")
 }
 
 func (s *Server) logRequest(next http.Handler) http.Handler {
