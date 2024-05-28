@@ -17,7 +17,7 @@ type Config struct {
 		Port         string `yaml:"port"`
 		User         string `yaml:"user"`
 		Password     string `yaml:"password"`
-		DatabaseName string `yaml:"database"`
+		DatabaseName string `yaml:"name"`
 	} `yaml:"database"`
 
 	NATS struct {
