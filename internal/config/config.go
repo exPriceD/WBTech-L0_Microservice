@@ -24,7 +24,7 @@ type Config struct {
 		Url       string `yaml:"host"`
 		ClusterID string `yaml:"cluster_id"`
 		ClientID  string `yaml:"client_id"`
-	}
+	} `yaml:"nats-streaming"`
 }
 
 func LoadConfig() (*Config, error) {
