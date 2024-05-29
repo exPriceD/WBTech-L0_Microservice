@@ -1,11 +1,11 @@
 package app
 
 import (
-	"WBTech_L0/internal/config"
-	"WBTech_L0/internal/middleware"
-	"WBTech_L0/internal/repository"
 	"database/sql"
 	"encoding/json"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/middleware"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/repository"
 	"github.com/gorilla/mux"
 	"github.com/nats-io/stan.go"
 	"log"

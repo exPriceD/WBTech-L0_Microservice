@@ -1,9 +1,9 @@
 package app
 
 import (
-	"WBTech_L0/internal/config"
-	"WBTech_L0/internal/db"
 	"database/sql"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/db"
 	"log"
 )
 

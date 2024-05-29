@@ -1,7 +1,7 @@
 package main
 
 import (
-	"WBTech_L0/internal/app"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/app"
 	"log"
 )
 

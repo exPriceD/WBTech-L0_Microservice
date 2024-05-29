@@ -1,9 +1,9 @@
 package db
 
 import (
-	"WBTech_L0/internal/config"
 	"database/sql"
 	"fmt"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	_ "github.com/lib/pq"
 	"log"
 )
