@@ -4,7 +4,7 @@ import (
 	"WBTech_L0/internal/config"
 	"WBTech_L0/internal/db"
 	"database/sql"
-	"net/http"
+	"log"
 )
 
 func StartServer() error {
@@ -13,16 +13,22 @@ func StartServer() error {
 		return err
 	}
 	// Соединение с DB
-	if err := db.InitDB(cfg); err != nil {
+	DB, err := db.InitDB(cfg)
+	if err != nil {
 		return err
 	}
-	defer func(DB *sql.DB) {
+
+	defer func(db *sql.DB) {
 		err := DB.Close()
 		if err != nil {
+			log.Fatal(err)
 		}
 	}(db.DB)
 
-	srv := NewServer()
+	srv := NewServer(cfg, DB)
 
-	return http.ListenAndServe(cfg.Server.Port, srv)
+	if err := srv.Start(); err != nil {
+		return err
+	}
+	return nil
 }

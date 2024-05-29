@@ -1,61 +1,97 @@
 package app
 
 import (
-	"WBTech_L0/internal/handler"
+	"WBTech_L0/internal/config"
+	"WBTech_L0/internal/middleware"
+	"WBTech_L0/internal/repository"
+	"database/sql"
+	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
+	"github.com/nats-io/stan.go"
+	"log"
 	"net/http"
-	"time"
 )
 
 type Server struct {
-	router *mux.Router
-	logger *logrus.Logger
+	addr          string
+	router        *mux.Router
+	natsConn      stan.Conn
+	natsClusterID string
+	natsClientID  string
+	orderRepo     *repository.OrderRepository
 }
 
-func NewServer() *Server {
+func NewServer(cfg *config.Config, db *sql.DB) *Server {
 	s := &Server{
-		router: mux.NewRouter(),
-		logger: logrus.New(),
+		addr:          cfg.Server.Port,
+		router:        mux.NewRouter(),
+		natsClusterID: cfg.NATS.ClusterID,
+		natsClientID:  cfg.NATS.ClientID,
 	}
-	s.configureRouter()
 
+	s.configureRouter()
+	s.orderRepo = repository.NewOrderRepository(db)
 	return s
+}
+
+func (s *Server) configureRouter() {
+	s.router.Use(middleware.LoggingMiddleware)
+	s.router.HandleFunc("/order/{id}", s.getOrderHandler).Methods("GET")
+}
+
+func (s *Server) configureNATS() error {
+	natsConn, err := stan.Connect(s.natsClusterID, s.natsClientID)
+	if err != nil {
+		return err
+	}
+	s.natsConn = natsConn
+	return nil
+}
+
+func (s *Server) Start() error {
+	if err := s.configureNATS(); err != nil {
+		return err
+	}
+	defer func(natsConn stan.Conn) {
+		err := natsConn.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(s.natsConn)
+
+	log.Printf("Starting server on %s", s.addr)
+	return http.ListenAndServe(s.addr, s.router)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func (s *Server) configureRouter() {
-	s.router.Use(s.logRequest)
-	s.router.HandleFunc("/", handler.HandleTest).Methods("GET")
-}
+func (s *Server) getOrderHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
 
-func (s *Server) logRequest(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := s.logger
-		logger.Infof("started %s %s", r.Method, r.RequestURI)
+	order, err := s.orderRepo.GetById(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-		start := time.Now()
-		rw := &responseWriter{w, http.StatusOK}
-		next.ServeHTTP(rw, r)
+	if order == nil {
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
 
-		var level logrus.Level
-		switch {
-		case rw.code >= 500:
-			level = logrus.ErrorLevel
-		case rw.code >= 400:
-			level = logrus.WarnLevel
-		default:
-			level = logrus.InfoLevel
-		}
-		logger.Logf(
-			level,
-			"completed with %d %s in %v",
-			rw.code,
-			http.StatusText(rw.code),
-			time.Now().Sub(start),
-		)
-	})
+	data, err := json.Marshal(order)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
