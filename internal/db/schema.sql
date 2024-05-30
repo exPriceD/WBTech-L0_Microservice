@@ -2,6 +2,7 @@ CREATE TABLE orders
 (
     order_uid          VARCHAR PRIMARY KEY,
     track_number       VARCHAR,
+    delivery_id        INTEGER,
     entry              VARCHAR,
     locale             VARCHAR,
     internal_signature VARCHAR,
@@ -10,26 +11,27 @@ CREATE TABLE orders
     shardkey           VARCHAR,
     sm_id              INTEGER,
     date_created       TIMESTAMP,
-    oof_shard          VARCHAR
+    oof_shard          VARCHAR,
+    FOREIGN KEY (delivery_id) REFERENCES delivery (delivery_id),
+    FOREIGN KEY (order_uid) REFERENCES payment (transaction),
+    FOREIGN KEY (track_number) REFERENCES items (track_number)
 );
 
 CREATE TABLE delivery
 (
-    order_uid VARCHAR PRIMARY KEY,
+    delivery_id INTEGER PRIMARY KEY,
     name      VARCHAR,
     phone     VARCHAR,
     zip       VARCHAR,
     city      VARCHAR,
     address   VARCHAR,
     region    VARCHAR,
-    email     VARCHAR,
-    FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
+    email     VARCHAR
 );
 
 CREATE TABLE payment
 (
-    order_uid     VARCHAR PRIMARY KEY,
-    transaction   VARCHAR,
+    transaction   VARCHAR PRIMARY KEY,
     request_id    VARCHAR,
     currency      VARCHAR,
     provider      VARCHAR,
@@ -38,16 +40,13 @@ CREATE TABLE payment
     bank          VARCHAR,
     delivery_cost INTEGER,
     goods_total   INTEGER,
-    custom_fee    INTEGER,
-    FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
+    custom_fee    INTEGER
 );
 
 CREATE TABLE items
 (
-    item_id      SERIAL PRIMARY KEY,
-    order_uid    VARCHAR,
+    track_number VARCHAR PRIMARY KEY,
     chrt_id      INTEGER,
-    track_number VARCHAR,
     price        INTEGER,
     rid          VARCHAR,
     name         VARCHAR,
@@ -56,6 +55,5 @@ CREATE TABLE items
     total_price  INTEGER,
     nm_id        INTEGER,
     brand        VARCHAR,
-    status       INTEGER,
-    FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
+    status       INTEGER
 );
