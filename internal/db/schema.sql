@@ -1,22 +1,3 @@
-CREATE TABLE orders
-(
-    order_uid          VARCHAR PRIMARY KEY,
-    track_number       VARCHAR,
-    delivery_id        INTEGER,
-    entry              VARCHAR,
-    locale             VARCHAR,
-    internal_signature VARCHAR,
-    customer_id        VARCHAR,
-    delivery_service   VARCHAR,
-    shardkey           VARCHAR,
-    sm_id              INTEGER,
-    date_created       TIMESTAMP,
-    oof_shard          VARCHAR,
-    FOREIGN KEY (delivery_id) REFERENCES delivery (delivery_id),
-    FOREIGN KEY (order_uid) REFERENCES payment (transaction),
-    FOREIGN KEY (track_number) REFERENCES items (track_number)
-);
-
 CREATE TABLE delivery
 (
     delivery_id INTEGER PRIMARY KEY,
@@ -45,8 +26,8 @@ CREATE TABLE payment
 
 CREATE TABLE items
 (
-    track_number VARCHAR PRIMARY KEY,
-    chrt_id      INTEGER,
+    chrt_id      INTEGER PRIMARY KEY,
+    track_number VARCHAR UNIQUE,
     price        INTEGER,
     rid          VARCHAR,
     name         VARCHAR,
@@ -56,4 +37,23 @@ CREATE TABLE items
     nm_id        INTEGER,
     brand        VARCHAR,
     status       INTEGER
+);
+
+CREATE TABLE orders
+(
+    order_uid          VARCHAR PRIMARY KEY,
+    track_number       VARCHAR,
+    delivery_id        INTEGER,
+    entry              VARCHAR,
+    locale             VARCHAR,
+    internal_signature VARCHAR,
+    customer_id        VARCHAR,
+    delivery_service   VARCHAR,
+    shardkey           VARCHAR,
+    sm_id              INTEGER,
+    date_created       TIMESTAMP,
+    oof_shard          VARCHAR,
+    FOREIGN KEY (delivery_id) REFERENCES delivery (delivery_id),
+    FOREIGN KEY (order_uid) REFERENCES payment (transaction),
+    FOREIGN KEY (track_number) REFERENCES items (track_number)
 );
