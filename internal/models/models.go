@@ -5,9 +5,6 @@ import "time"
 type Order struct {
 	OrderUID          string    `json:"order_uid"`
 	TrackNumber       string    `json:"track_number"`
-	Delivery          Delivery  `json:"delivery"`
-	Payment           Payment   `json:"payment"`
-	Items             []Item    `json:"items"`
 	Entry             string    `json:"entry"`
 	Locale            string    `json:"locale"`
 	InternalSignature string    `json:"internal_signature"`
@@ -20,13 +17,15 @@ type Order struct {
 }
 
 type Delivery struct {
-	Name    string `json:"name"`
-	Phone   string `json:"phone"`
-	Zip     string `json:"zip"`
-	City    string `json:"city"`
-	Address string `json:"address"`
-	Region  string `json:"region"`
-	Email   string `json:"email"`
+	DeliveryID uint64 `json:"delivery_id"`
+	OrderUID   string `json:"order_uid"`
+	Name       string `json:"name"`
+	Phone      string `json:"phone"`
+	Zip        string `json:"zip"`
+	City       string `json:"city"`
+	Address    string `json:"address"`
+	Region     string `json:"region"`
+	Email      string `json:"email"`
 }
 
 type Payment struct {
@@ -44,6 +43,7 @@ type Payment struct {
 
 type Item struct {
 	ChrtID      int    `json:"chrt_id"`
+	OrderUID    string `json:"order_uid"`
 	TrackNumber string `json:"track_number"`
 	Price       int    `json:"price"`
 	Rid         string `json:"rid"`
