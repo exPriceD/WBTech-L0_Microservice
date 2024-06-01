@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/middleware"
-	"github.com/exPriceD/WBTech-L0_Microservice/internal/repository"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/repositories/orders"
 	"github.com/gorilla/mux"
 	"github.com/nats-io/stan.go"
 	"log"
@@ -18,7 +18,7 @@ type Server struct {
 	natsConn      stan.Conn
 	natsClusterID string
 	natsClientID  string
-	orderRepo     *repository.OrderRepository
+	orderRepo     *orders.OrderRepository
 }
 
 func NewServer(cfg *config.Config, db *sql.DB) *Server {
@@ -30,7 +30,7 @@ func NewServer(cfg *config.Config, db *sql.DB) *Server {
 	}
 
 	s.configureRouter()
-	s.orderRepo = repository.NewOrderRepository(db)
+	s.orderRepo = orders.NewOrderRepository(db)
 	return s
 }
 

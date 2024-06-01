@@ -1,4 +1,4 @@
-package repository
+package orders
 
 import (
 	"database/sql"
