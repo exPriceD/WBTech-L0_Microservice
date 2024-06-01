@@ -1,9 +1,9 @@
 package app
 
 import (
-	"database/sql"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/db"
+	"github.com/jmoiron/sqlx"
 	"log"
 )
 
@@ -18,7 +18,7 @@ func StartServer() error {
 		return err
 	}
 
-	defer func(db *sql.DB) {
+	defer func(db *sqlx.DB) {
 		err := DB.Close()
 		if err != nil {
 			log.Fatal(err)

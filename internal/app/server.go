@@ -1,12 +1,12 @@
 package app
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/middleware"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/repositories/orders"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/stan.go"
 	"log"
 	"net/http"
@@ -18,10 +18,10 @@ type Server struct {
 	natsConn      stan.Conn
 	natsClusterID string
 	natsClientID  string
-	orderRepo     *orders.OrderRepository
+	orderRepo     *orders.Repository
 }
 
-func NewServer(cfg *config.Config, db *sql.DB) *Server {
+func NewServer(cfg *config.Config, db *sqlx.DB) *Server {
 	s := &Server{
 		addr:          cfg.Server.Port,
 		router:        mux.NewRouter(),
