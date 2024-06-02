@@ -25,6 +25,12 @@ type Config struct {
 		ClusterID string `yaml:"cluster_id"`
 		ClientID  string `yaml:"client_id"`
 	} `yaml:"nats-streaming"`
+
+	Redis struct {
+		Url      string `yaml:"host"`
+		Password string `yaml:"password"`
+		DB       int64  `yaml:"DB"`
+	} `yaml:"redis"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -1,15 +1,19 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/middleware"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/repositories/orders"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"github.com/nats-io/stan.go"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -19,14 +23,16 @@ type Server struct {
 	natsClusterID string
 	natsClientID  string
 	orderRepo     *orders.Repository
+	redisClient   *redis.Client
 }
 
-func NewServer(cfg *config.Config, db *sqlx.DB) *Server {
+func NewServer(cfg *config.Config, db *sqlx.DB, redisClient *redis.Client) *Server {
 	s := &Server{
 		addr:          cfg.Server.Port,
 		router:        mux.NewRouter(),
 		natsClusterID: cfg.NATS.ClusterID,
 		natsClientID:  cfg.NATS.ClientID,
+		redisClient:   redisClient,
 	}
 
 	s.configureRouter()
@@ -71,10 +77,40 @@ func (s *Server) getOrderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	orderId := vars["id"]
 
+	ctx := context.Background()
+	cachedOrder, err := s.redisClient.Get(ctx, orderId).Result()
+
+	if errors.Is(err, redis.Nil) {
+		log.Printf("Cache miss for order ID %s", orderId)
+	} else if err != nil {
+		log.Printf("Error getting cache for order ID %s", orderId)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		_, err := w.Write([]byte(cachedOrder))
+		if err != nil {
+			log.Printf("Error writing cache for order ID %s", orderId)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			return
+		}
+	}
+
 	order, err := s.orderRepo.GetByID(orderId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	serializedOrder, err := json.Marshal(order)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = s.redisClient.Set(ctx, orderId, serializedOrder, 3600*time.Second).Err()
+	if err != nil {
+		log.Printf("Error setting cache for order ID %s. Error: %s", orderId, err)
 	}
 
 	if order == nil {

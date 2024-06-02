@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/cache"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/config"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/db"
 	"github.com/jmoiron/sqlx"
@@ -18,6 +19,8 @@ func StartServer() error {
 		return err
 	}
 
+	redisClient := cache.InitRedis(cfg)
+
 	defer func(db *sqlx.DB) {
 		err := DB.Close()
 		if err != nil {
@@ -25,7 +28,7 @@ func StartServer() error {
 		}
 	}(db.DB)
 
-	srv := NewServer(cfg, DB)
+	srv := NewServer(cfg, DB, redisClient)
 
 	if err := srv.Start(); err != nil {
 		return err
