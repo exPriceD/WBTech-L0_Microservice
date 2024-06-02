@@ -16,7 +16,7 @@ func NewOrderRepository(db *sqlx.DB) *Repository {
 }
 
 func (r *Repository) GetByID(orderUID string) (*entities.OrderWithDetails, error) {
-	order := make([]entities.OrderWithDetails, 0)
+	var order entities.OrderWithDetails
 	orderQuery := `
 		SELECT
 		    o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature, o.customer_id, o.delivery_service, o.shardkey, o.sm_id, o.date_created, o.oof_shard,
@@ -30,20 +30,25 @@ func (r *Repository) GetByID(orderUID string) (*entities.OrderWithDetails, error
 				 JOIN payment p ON o.order_uid = p.transaction
 		WHERE o.order_uid = $1;
 `
-	err := r.db.Select(&order, orderQuery, orderUID)
-	if err != nil {
+	if err := r.db.QueryRow(orderQuery, orderUID).Scan(
+		&order.OrderUID, &order.TrackNumber, &order.Entry, &order.Locale, &order.InternalSignature,
+		&order.CustomerID, &order.DeliveryService, &order.Shardkey, &order.SmID, &order.DateCreated, &order.OofShard,
+		&order.Delivery.Name, &order.Delivery.Phone, &order.Delivery.Zip, &order.Delivery.City, &order.Delivery.Address, &order.Delivery.Region, &order.Delivery.Email,
+		&order.Payment.Transaction, &order.Payment.RequestID, &order.Payment.Currency, &order.Payment.Provider, &order.Payment.Amount, &order.Payment.PaymentDT, &order.Payment.Bank, &order.Payment.DeliveryCost, &order.Payment.GoodsTotal, &order.Payment.CustomFee,
+	); err != nil {
 		return nil, err
 	}
+
 	items := make([]entities.Items, 0)
 	itemsQuery := `SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM items WHERE order_uid = $1;`
-	err = r.db.Select(&items, itemsQuery, orderUID)
+	err := r.db.Select(&items, itemsQuery, orderUID)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range items {
-		order[0].Items = append(order[0].Items, item)
+		order.Items = append(order.Items, item)
 	}
 
-	return &order[0], nil
+	return &order, nil
 }
