@@ -1,7 +1,6 @@
 package orders
 
 import (
-	"fmt"
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/entities"
 	"github.com/jmoiron/sqlx"
 )
@@ -16,7 +15,7 @@ func NewOrderRepository(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) GetByID(orderUID string) (*[]entities.OrderWithDetails, error) {
+func (r *Repository) GetByID(orderUID string) (*entities.OrderWithDetails, error) {
 	order := make([]entities.OrderWithDetails, 0)
 	orderQuery := `
 		SELECT
@@ -46,6 +45,5 @@ func (r *Repository) GetByID(orderUID string) (*[]entities.OrderWithDetails, err
 		order[0].Items = append(order[0].Items, item)
 	}
 
-	fmt.Println(order)
-	return &order, nil
+	return &order[0], nil
 }

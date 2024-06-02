@@ -36,14 +36,14 @@ type OrderWithDetails struct {
 
 type Items struct {
 	ChrtID      int    `db:"chrt_id" json:"chrt_id"`
-	TrackNumber string `db:"track_number" json:"item_track_number"`
-	Price       int    `db:"price" json:"item_price"`
-	Rid         string `db:"rid" json:"item_rid"`
-	Name        string `db:"name" json:"item_name"`
-	Sale        int    `db:"sale" json:"item_sale"`
-	Size        string `db:"size" json:"item_size"`
-	TotalPrice  int    `db:"total_price" json:"item_total_price"`
-	NmID        int    `db:"nm_id" json:"item_nm_id"`
-	Brand       string `db:"brand" json:"item_brand"`
-	Status      int    `db:"status" json:"item_status"`
+	TrackNumber string `db:"track_number" json:"track_number"`
+	Price       int    `db:"price" json:"price"`
+	Rid         string `db:"rid" json:"rid"`
+	Name        string `db:"name" json:"name"`
+	Sale        int    `db:"sale" json:"sale"`
+	Size        string `db:"size" json:"size"`
+	TotalPrice  int    `db:"total_price" json:"total_price"`
+	NmID        int    `db:"nm_id" json:"nm_id"`
+	Brand       string `db:"brand" json:"brand"`
+	Status      int    `db:"status" json:"status"`
 }
