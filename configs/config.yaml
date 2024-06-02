@@ -1,6 +1,6 @@
 server:
-  host: "localhost"
-  port: ":8080"
+  host: ""
+  port: ""
 
 database:
   host: ""
@@ -14,5 +14,7 @@ nats-streaming:
   cluster_id: ""
   client_id: ""
 
-logs:
-  log_level: "debug"
+redis:
+  url: ""
+  password: ""
+  DB: 0
