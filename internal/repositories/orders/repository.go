@@ -2,20 +2,41 @@ package orders
 
 import (
 	"github.com/exPriceD/WBTech-L0_Microservice/internal/entities"
+	"github.com/exPriceD/WBTech-L0_Microservice/internal/repositories/items"
 	"github.com/jmoiron/sqlx"
 )
 
 type Repository struct {
-	db *sqlx.DB
+	db        *sqlx.DB
+	itemsRepo *items.Repository
 }
 
-func NewOrderRepository(db *sqlx.DB) *Repository {
+func NewOrderRepository(db *sqlx.DB, itemsRepo *items.Repository) *Repository {
 	return &Repository{
-		db: db,
+		db:        db,
+		itemsRepo: itemsRepo,
 	}
 }
 
 func (r *Repository) GetByID(orderUID string) (*entities.OrderWithDetails, error) {
+	order, err := r.getOrderWithPaymentAndDelivery(orderUID)
+	if err != nil {
+		return nil, err
+	}
+
+	receivedItems, err := r.itemsRepo.GetItems(orderUID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, item := range receivedItems {
+		order.Items = append(order.Items, item)
+	}
+
+	return order, nil
+}
+
+func (r *Repository) getOrderWithPaymentAndDelivery(orderUID string) (*entities.OrderWithDetails, error) {
 	var order entities.OrderWithDetails
 	orderQuery := `
 		SELECT
@@ -39,16 +60,40 @@ func (r *Repository) GetByID(orderUID string) (*entities.OrderWithDetails, error
 		return nil, err
 	}
 
-	items := make([]entities.Items, 0)
-	itemsQuery := `SELECT chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status FROM items WHERE order_uid = $1;`
-	err := r.db.Select(&items, itemsQuery, orderUID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, item := range items {
-		order.Items = append(order.Items, item)
-	}
-
 	return &order, nil
+}
+
+func (r *Repository) Insert(order *entities.OrderWithDetails) error {
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+
+	orderQuery := `INSERT INTO orders (order_uid, track_number, entry, locale, internal_signature, customer_id, delivery_service, shardkey, sm_id, date_created, oof_shard) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`
+	if _, err := tx.Exec(orderQuery, order.OrderUID, order.TrackNumber, order.Entry, order.Locale, order.InternalSignature, order.CustomerID, order.DeliveryService, order.Shardkey, order.SmID, order.DateCreated, order.OofShard); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	deliveryQuery := `INSERT INTO delivery (order_uid, name, phone, zip, city, address, region, email) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`
+	if _, err := tx.Exec(deliveryQuery, order.OrderUID, order.Delivery.Name, order.Delivery.Phone, order.Delivery.Zip, order.Delivery.City, order.Delivery.Address, order.Delivery.Region, order.Delivery.Email); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	paymentQuery := `INSERT INTO payment (transaction, request_id, currency, provider, amount, payment_dt, bank, delivery_cost, goods_total, custom_fee) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`
+	if _, err := tx.Exec(paymentQuery, order.OrderUID, order.Payment.Transaction, order.Payment.RequestID, order.Payment.Currency, order.Payment.Provider, order.Payment.Amount, order.Payment.PaymentDT, order.Payment.Bank, order.Payment.DeliveryCost, order.Payment.GoodsTotal, order.Payment.CustomFee); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, item := range order.Items {
+		itemQuery := `INSERT INTO items (chrt_id, track_number, price, rid, name, sale, size, total_price, nm_id, brand, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);`
+		if _, err := tx.Exec(itemQuery, item.ChrtID, item.TrackNumber, item.Price, item.Rid, item.Name, item.Sale, item.Size, item.TotalPrice, item.NmID, item.Brand, item.Status); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	tx.Commit()
+	return nil
 }
