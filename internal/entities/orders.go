@@ -1,6 +1,8 @@
 package entities
 
-import "time"
+import (
+	"time"
+)
 
 type OrderWithDetails struct {
 	OrderUID          string    `db:"order_uid" json:"order_uid"`
