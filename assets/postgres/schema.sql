@@ -1,4 +1,4 @@
-CREATE TABLE orders
+CREATE TABLE IF NOT EXISTS orders
 (
     order_uid          VARCHAR PRIMARY KEY,
     track_number       VARCHAR,
@@ -13,7 +13,7 @@ CREATE TABLE orders
     oof_shard          VARCHAR
 );
 
-CREATE TABLE delivery
+CREATE TABLE IF NOT EXISTS delivery
 (
     delivery_id SERIAL UNIQUE PRIMARY KEY,
     order_uid   VARCHAR,
@@ -27,7 +27,7 @@ CREATE TABLE delivery
     FOREIGN KEY (order_uid) REFERENCES orders (order_uid)
 );
 
-CREATE TABLE payment
+CREATE TABLE IF NOT EXISTS payment
 (
     transaction   VARCHAR UNIQUE PRIMARY KEY,
     request_id    VARCHAR,
@@ -42,7 +42,7 @@ CREATE TABLE payment
     FOREIGN KEY (transaction) REFERENCES orders (order_uid)
 );
 
-CREATE TABLE items
+CREATE TABLE IF NOT EXISTS items
 (
     chrt_id      INTEGER PRIMARY KEY,
     order_uid    VARCHAR,
