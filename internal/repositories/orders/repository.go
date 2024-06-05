@@ -97,3 +97,12 @@ func (r *Repository) Insert(order *entities.OrderWithDetails) error {
 	_ = tx.Commit()
 	return nil
 }
+
+func (r *Repository) GetAll() ([]entities.OrderWithoutDetails, error) {
+	var orders []entities.OrderWithoutDetails
+	query := `SELECT order_uid, track_number, entry, locale, internal_signature, customer_id, delivery_service, shardkey, sm_id, date_created, oof_shard FROM orders;`
+	if err := r.db.Select(&orders, query); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
