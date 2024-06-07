@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders</title>
+    <style>
+        .order-card {
+            border: 1px solid #ccc;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .order-card:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+<h1>Orders</h1>
+<div id="orders-container"></div>
+
+<script>
+    const HOST = "http://localhost:8080"
+
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch(HOST + '/api/orders')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('orders-container');
+                data.forEach(order => {
+                    const card = document.createElement('div');
+                    card.className = 'order-card';
+                    card.innerHTML = `
+                            <p><strong>Order UID:</strong> ${order.order_uid}</p>
+                            <p><strong>Track Number:</strong> ${order.track_number}</p>
+                            <p><strong>Entry:</strong> ${order.entry}</p>
+                            <p><strong>Locale:</strong> ${order.locale}</p>
+                            <p><strong>Customer ID:</strong> ${order.customer_id}</p>
+                            <p><strong>Delivery Service:</strong> ${order.delivery_service}</p>
+                            <p><strong>Date Created:</strong> ${new Date(order.date_created).toLocaleString()}</p>
+                        `;
+                    card.addEventListener('click', () => {
+                        window.location.href = HOST + `/order/${order.order_uid}`;
+                    });
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => console.error('Error fetching orders:', error));
+    });
+</script>
+</body>
+</html>

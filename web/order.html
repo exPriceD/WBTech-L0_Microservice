@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        .order-details {
+            border: 1px solid #ccc;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 8px;
+        }
+        .order-section {
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+<h1>Order Details</h1>
+<div id="order-details" class="order-details"></div>
+
+<script>
+    const HOST = "http://localhost:8080"
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const orderUID = window.location.pathname.split('/').pop();
+        fetch(HOST + `/api/order/${orderUID}`)
+            .then(response => response.json())
+            .then(order => {
+                const container = document.getElementById('order-details');
+                container.innerHTML = `
+                        <div class="order-section">
+                            <h2>General Information</h2>
+                            <p><strong>Order UID:</strong> ${order.order_uid}</p>
+                            <p><strong>Track Number:</strong> ${order.track_number}</p>
+                            <p><strong>Entry:</strong> ${order.entry}</p>
+                            <p><strong>Locale:</strong> ${order.locale}</p>
+                            <p><strong>Customer ID:</strong> ${order.customer_id}</p>
+                            <p><strong>Delivery Service:</strong> ${order.delivery_service}</p>
+                            <p><strong>Date Created:</strong> ${new Date(order.date_created).toLocaleString()}</p>
+                        </div>
+                        <div class="order-section">
+                            <h2>Delivery Information</h2>
+                            <p><strong>Name:</strong> ${order.delivery.name}</p>
+                            <p><strong>Phone:</strong> ${order.delivery.phone}</p>
+                            <p><strong>Zip:</strong> ${order.delivery.zip}</p>
+                            <p><strong>City:</strong> ${order.delivery.city}</p>
+                            <p><strong>Address:</strong> ${order.delivery.address}</p>
+                            <p><strong>Region:</strong> ${order.delivery.region}</p>
+                            <p><strong>Email:</strong> ${order.delivery.email}</p>
+                        </div>
+                        <div class="order-section">
+                            <h2>Payment Information</h2>
+                            <p><strong>Transaction:</strong> ${order.payment.transaction}</p>
+                            <p><strong>Currency:</strong> ${order.payment.currency}</p>
+                            <p><strong>Provider:</strong> ${order.payment.provider}</p>
+                            <p><strong>Amount:</strong> ${order.payment.amount}</p>
+                            <p><strong>Payment Date:</strong> ${new Date(order.payment.payment_dt * 1000).toLocaleString()}</p>
+                            <p><strong>Bank:</strong> ${order.payment.bank}</p>
+                            <p><strong>Delivery Cost:</strong> ${order.payment.delivery_cost}</p>
+                            <p><strong>Goods Total:</strong> ${order.payment.goods_total}</p>
+                            <p><strong>Custom Fee:</strong> ${order.payment.custom_fee}</p>
+                        </div>
+                        <div class="order-section">
+                            <h2>Items</h2>
+                            ${order.items.map(item => `
+                                <div class="order-details">
+                                    <p><strong>Name:</strong> ${item.name}</p>
+                                    <p><strong>Price:</strong> ${item.price}</p>
+                                    <p><strong>Total Price:</strong> ${item.total_price}</p>
+                                    <p><strong>Brand:</strong> ${item.brand}</p>
+                                    <p><strong>Status:</strong> ${item.status}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+            })
+            .catch(error => console.error('Error fetching order details:', error));
+    });
+</script>
+</body>
+</html>
