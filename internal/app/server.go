@@ -17,6 +17,8 @@ import (
 	"github.com/redis/go-redis/v9"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -49,8 +51,13 @@ func NewServer(cfg *config.Config, db *sqlx.DB, redisClient *redis.Client, stanC
 // configureRouter sets up the routes for the server.
 func (s *Server) configureRouter() {
 	s.router.Use(middleware.LoggingMiddleware)
-	s.router.HandleFunc("/order/{id}", s.getOrderHandler).Methods("GET")
-	s.router.HandleFunc("/orders", s.getAllOrders).Methods("GET")
+	s.router.Use(middleware.CorsMiddleware)
+
+	s.router.HandleFunc("/", serveHTML("index.html")).Methods("GET")
+	s.router.HandleFunc("/order/{id}", serveHTML("order.html")).Methods("GET")
+
+	s.router.HandleFunc("/api/order/{id}", s.getOrderHandler).Methods("GET")
+	s.router.HandleFunc("/api/orders", s.getAllOrders).Methods("GET")
 }
 
 // subscribeToOrders subscribes to the "orders" topic on the STAN connection.
@@ -202,4 +209,22 @@ func (s *Server) cacheOrder(ctx context.Context, orderUID string, order *entitie
 		return err
 	}
 	return nil
+}
+
+func serveHTML(page string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := filepath.Join("web", page)
+
+		html, err := os.ReadFile(path)
+		if err != nil {
+			http.Error(w, "Could not read HTML file", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		_, err = w.Write(html)
+		if err != nil {
+			return
+		}
+	}
 }
