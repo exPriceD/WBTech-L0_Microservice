@@ -1,0 +1,62 @@
+{
+  "order_uid": "23TECHU21ID",
+  "track_number": "WBILMTESTTRACK",
+  "entry": "WBIL",
+  "delivery": {
+    "name": "Maxim Bogdanov",
+    "phone": "+79317019910",
+    "zip": "2639809",
+    "city": "Kiryat Mozkin",
+    "address": "Ploshad Mira 15",
+    "region": "Kraiot",
+    "email": "test@gmail.com"
+  },
+  "payment": {
+    "transaction": "23TECHU21ID",
+    "request_id": "",
+    "currency": "USD",
+    "provider": "wbpay",
+    "amount": 1817,
+    "payment_dt": 1637907727,
+    "bank": "alpha",
+    "delivery_cost": 1500,
+    "goods_total": 317,
+    "custom_fee": 0
+  },
+  "items": [
+    {
+      "chrt_id": 389152,
+      "track_number": "seesAAASSWS",
+      "price": 453,
+      "rid": "123adsdb4219087a764ae0btest",
+      "name": "Mascaras",
+      "sale": 30,
+      "size": "0",
+      "total_price": 317,
+      "nm_id": 2389212,
+      "brand": "Vivienne Sabo",
+      "status": 202
+    },
+    {
+      "chrt_id": 392343,
+      "track_number": "seesAAASSWS",
+      "price": 1533,
+      "rid": "2gab4219087a764ae12231320btest",
+      "name": "Mascaras",
+      "sale": 40,
+      "size": "0",
+      "total_price": 205,
+      "nm_id": 2389219,
+      "brand": "Vivienne Sabo",
+      "status": 102
+    }
+  ],
+  "locale": "en",
+  "internal_signature": "",
+  "customer_id": "test",
+  "delivery_service": "meest",
+  "shardkey": "9",
+  "sm_id": 99,
+  "date_created": "2023-12-15T12:22:19Z",
+  "oof_shard": "1"
+}
