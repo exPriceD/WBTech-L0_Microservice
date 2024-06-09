@@ -4,12 +4,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/nats-io/stan.go"
 )
 
 func main() {
-	filePath := "order.json"
+	filePath := filepath.Join("natsStreaming", "order.json")
 
 	file, err := os.Open(filePath)
 	if err != nil {
